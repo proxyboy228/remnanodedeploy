@@ -15,9 +15,9 @@ fi
 GITHUB_USER="proxyboy228"
 GITHUB_REPO="remnanodedeploy"
 
-if [ "$#" -lt 7 ]; then
-    echo "❌ Ошибка! Переданы не все аргументы (должно быть 7)."
-    echo "Порядок: <DOMAIN> <EMAIL> <SECRET_KEY> <PORTS> <CF_TOKEN> <CF_ZONE_ID> <PANEL_IP>"
+if [ "$#" -lt 9 ]; then
+    echo "❌ Ошибка! Переданы не все аргументы (должно быть 9)."
+    echo "Порядок: <DOMAIN> <EMAIL> <SECRET_KEY> <PORTS> <CF_TOKEN> <CF_ZONE_ID> <PANEL_IP> <Z_KID> <Z_HMAC>"
     exit 1
 fi
 
@@ -28,6 +28,8 @@ ADDITIONAL_PORTS="$4"
 CF_TOKEN="$5"
 CF_ZONE_ID="$6"
 PANEL_IP="$7"
+Z_KID="$8"
+Z_HMAC="$9"
 
 # --- Автоопределение операционной системы ---
 if [ -f /etc/os-release ]; then
@@ -81,9 +83,9 @@ apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docke
 echo "✅ Docker успешно установлен."
 
 # --- Этап 3: Сайт-заглушка и SSL-сертификаты ---
-echo "🔒 Настройка маскировки Nginx и генерация SSL..."
+echo "🔒 Настройка маскировки Nginx и генерация SSL с фоллбеком..."
 curl -sSL "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/main/StealSNI_auto.sh" -o sni.sh
-chmod +x sni.sh && ./sni.sh "$DOMAIN_NAME" "$EMAIL" "$CF_TOKEN" && rm -f sni.sh
+chmod +x sni.sh && ./sni.sh "$DOMAIN_NAME" "$EMAIL" "$CF_TOKEN" "$Z_KID" "$Z_HMAC" && rm -f sni.sh
 
 # --- Этап 4: Развертывание контейнера Remnanode ---
 echo "📦 Настройка Remnawave Node..."
