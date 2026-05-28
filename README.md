@@ -8,7 +8,7 @@
 Подключитесь к чистой VPS по SSH (от root) и запустите команду, подставив свои значения:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/ТВОЙ_GITHUB_ЮЗЕРНЕЙМ/ИМЯ_ТВОЕГО_РЕПОЗИТОРИЯ/main/deploy_node.sh](https://raw.githubusercontent.com/ТВОЙ_GITHUB_ЮЗЕРНЕЙМ/ИМЯ_ТВОЕГО_РЕПОЗИТОРИЯ/main/deploy_node.sh) -o deploy.sh && chmod +x deploy.sh && ./deploy.sh \
+curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/deploy_node.sh](https://raw.githubusercontent.com/ТВОЙ_GITHUB_ЮЗЕРНЕЙМ/ИМЯ_ТВОЕГО_РЕПОЗИТОРИЯ/main/deploy_node.sh) -o deploy.sh && chmod +x deploy.sh && ./deploy.sh \
 "us.domain.com" \
 "admin@domain.com" \
 "СЕКРЕТНЫЙ_КЛЮЧ_НОДЫ" \
