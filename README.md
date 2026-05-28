@@ -16,7 +16,7 @@ curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/de
 "ТВОЙ_CLOUDFLARE_API_TOKEN" \
 "ТВОЙ_CLOUDFLARE_ZONE_ID" \
 "ip ноды"
-
+```
 
 Порядковый номер,Аргумент,Описание,Пример
 1,DOMAIN,"Поддомен, который вы выделяете под локацию (добавляется в DNS автоматически)","""us.domain.com"""
