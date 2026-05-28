@@ -31,11 +31,14 @@ PANEL_IP="$7"
 echo "🚀 Старт автоматизации для ноды: $DOMAIN_NAME"
 
 # --- Этап 0: Определение IP и добавление записи в Cloudflare ---
-PUBLIC_IP=$(curl -s https://icanhazip.com || curl -s https://ifconfig.me)
+echo "🌐 Определяем внешний IPv4-адрес сервера..."
+# Флаг -4 принудительно заставляет curl использовать только IPv4
+PUBLIC_IP=$(curl -4 -s https://icanhazip.com || curl -4 -s https://ifconfig.me)
+
 if [ -z "$PUBLIC_IP" ]; then
-    echo "❌ Не удалось определить публичный IP сервера." && exit 1
+    echo "❌ Не удалось определить публичный IPv4 сервера." && exit 1
 fi
-echo "🌐 Публичный IP сервера: $PUBLIC_IP. Добавляем в Cloudflare DNS..."
+echo "✅ Публичный IPv4 сервера: $PUBLIC_IP. Добавляем в Cloudflare DNS..."
 
 CF_RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
      -H "Authorization: Bearer $CF_TOKEN" \
