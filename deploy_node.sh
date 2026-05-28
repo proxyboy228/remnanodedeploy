@@ -33,7 +33,7 @@ echo "🚀 Старт автоматизации для ноды: $DOMAIN_NAME"
 # --- Этап 0: Определение IP и добавление записи в Cloudflare ---
 echo "🌐 Определяем внешний IPv4-адрес сервера..."
 # Флаг -4 принудительно заставляет curl использовать только IPv4
-PUBLIC_IP=$(curl -4 -s https://icanhazip.com || curl -4 -s https://ifconfig.me)
+PUBLIC_IP=$(curl 2ip.io)
 
 if [ -z "$PUBLIC_IP" ]; then
     echo "❌ Не удалось определить публичный IPv4 сервера." && exit 1
