@@ -19,6 +19,7 @@ curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/de
 ```
 
 Порядковый номер,Аргумент,Описание,Пример
+
 1,DOMAIN,"Поддомен, который вы выделяете под локацию (добавляется в DNS автоматически)","""us.domain.com"""
 
 2,EMAIL,Ваш email для регистрации SSL-сертификата Let's Encrypt,"""admin@domain.com"""
