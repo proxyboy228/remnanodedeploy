@@ -1,28 +1,30 @@
 # remnanodedeploy
 # Автоматический деплой нод Remnawave
 
-Скрипт для быстрой неинтерактивной настройки серверов-нод. Автоматически выполняет тюнинг сетевого стека, ставит Docker, привязывает IP к Cloudflare DNS (Round Robin), настраивает Nginx-маскировку по `proxy_protocol` через Let's Encrypt и закрывает порты через UFW.
+Скрипт для быстрой неинтерактивной настройки серверов-нод. Автоматически выполняет тюнинг сетевого стека, ставит Docker, привязывает IP к Cloudflare DNS (Round Robin), настраивает Nginx-маскировку по `proxy_protocol` через Let's Encrypt (с автоматическим фоллбеком на ZeroSSL в случае лимитов) и закрывает порты через UFW.
 
 ## Быстрый запуск (One-liner)
 
 Подключитесь к чистой VPS по SSH (от root) и запустите команду, подставив свои значения:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/deploy_node.sh](https://raw.githubusercontent.com/ТВОЙ_GITHUB_ЮЗЕРНЕЙМ/ИМЯ_ТВОЕГО_РЕПОЗИТОРИЯ/main/deploy_node.sh) -o deploy.sh && chmod +x deploy.sh && ./deploy.sh \
+curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/deploy_node.sh](https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/deploy_node.sh) -o deploy.sh && chmod +x deploy.sh && ./deploy.sh \
 "us.domain.com" \
 "admin@domain.com" \
 "СЕКРЕТНЫЙ_КЛЮЧ_НОДЫ" \
 "443 8443 2083" \
 "ТВОЙ_CLOUDFLARE_API_TOKEN" \
 "ТВОЙ_CLOUDFLARE_ZONE_ID" \
-"ip ноды"
+"ip_панели" \
+"ТВОЙ_ZEROSSL_EAB_KID" \
+"ТВОЙ_ZEROSSL_EAB_HMAC_KEY"
 ```
 
-Порядковый номер,Аргумент,Описание,Пример
+Порядковый номер, Аргумент, Описание, Пример
 
 1,DOMAIN,"Поддомен, который вы выделяете под локацию (добавляется в DNS автоматически)","""us.domain.com"""
 
-2,EMAIL,Ваш email для регистрации SSL-сертификата Let's Encrypt,"""admin@domain.com"""
+2,EMAIL,Ваш email для регистрации SSL-сертификата Let's Encrypt / ZeroSSL,"""admin@domain.com"""
 
 3,SECRET_KEY,Секретный ключ ноды для связи с управляющей панелью Remnawave,"""MyMegaSecret123"""
 
@@ -30,9 +32,13 @@ curl -sSL [https://raw.githubusercontent.com/proxyboy228/remnanodedeploy/main/de
 
 5,CF_TOKEN,API Токен Cloudflare с правами Zone.DNS:Edit и Zone.Zone:Read,"""a1b2c3d4..."""
 
-6,CF_ZONE_ID,Идентификатор зоны вашего домена в Cloudflare (находится на вкладке Overview),"""9f8e7d6c..."""
+6,CF_ZONE_ID,Идентификатор зоны вашего домена в Cloudflare,"""9f8e7d6c..."""
 
 7,PANEL_IP,Публичный IP-адрес вашей панели. Порт 2222 откроется только для него,"""127.0.0.1"""
+
+8,Z_KID,EAB KID ключ от аккаунта ZeroSSL для резервного выпуска сертификата,"""mY-KiD-sEcReT-123"""
+
+9,Z_HMAC,EAB HMAC ключ от аккаунта ZeroSSL для резервного выпуска сертификата,"""abc123HMACkey..."""
 
 Что скрипт делает автоматически:
 Запрашивает внешний IP текущей VPS и добавляет А-запись в Cloudflare (без проксирования).
