@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 # ==================================================================================
 # Мастер-скрипт автоматического развертывания ноды Remnawave + Reality + DNS
+# Поддержка: Ubuntu / Debian (Автоопределение ОС)
 # ==================================================================================
 
 if [[ "${EUID}" -ne 0 ]]; then
@@ -23,22 +24,31 @@ fi
 DOMAIN_NAME="$1"
 EMAIL="$2"
 NODE_SECRET="$3"
-ADDITIONAL_PORTS="$4" # Порты через пробел в кавычках ("443 8443")
+ADDITIONAL_PORTS="$4" 
 CF_TOKEN="$5"
 CF_ZONE_ID="$6"
 PANEL_IP="$7"
 
-echo "🚀 Старт автоматизации для ноды: $DOMAIN_NAME"
+# --- Автоопределение операционной системы ---
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS_TYPE=$ID # Получим 'ubuntu' или 'debian'
+else
+    echo "❌ Не удалось определить тип операционной системы." && exit 1
+fi
 
-# --- Этап 0: Определение IP и добавление записи в Cloudflare ---
-echo "🌐 Определяем внешний IPv4-адрес сервера..."
-# Флаг -4 принудительно заставляет curl использовать только IPv4
-PUBLIC_IP=$(curl 2ip.io)
+if [[ "$OS_TYPE" != "ubuntu" && "$OS_TYPE" != "debian" ]]; then
+    echo "❌ Скрипт поддерживает только Ubuntu и Debian. Найдено: $OS_TYPE" && exit 1
+fi
 
+echo "🚀 Старт автоматизации для ноды: $DOMAIN_NAME (ОС: $OS_TYPE)"
+
+# --- Этап 0: Определение IPv4 и добавление записи в Cloudflare ---
+PUBLIC_IP=$(curl -4 -s https://icanhazip.com || curl -4 -s https://ifconfig.me)
 if [ -z "$PUBLIC_IP" ]; then
     echo "❌ Не удалось определить публичный IPv4 сервера." && exit 1
 fi
-echo "✅ Публичный IPv4 сервера: $PUBLIC_IP. Добавляем в Cloudflare DNS..."
+echo "🌐 Публичный IPv4 сервера: $PUBLIC_IP. Добавляем в Cloudflare DNS..."
 
 CF_RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
      -H "Authorization: Bearer $CF_TOKEN" \
@@ -56,14 +66,19 @@ echo "⚙️  Запуск тюнинга сетевого стека..."
 curl -sSL "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/main/apply-xray-tune.sh" -o tune.sh
 chmod +x tune.sh && ./tune.sh && rm -f tune.sh
 
-# --- Этап 2: Установка Docker под ключ ---
-echo "🐳 Установка Docker..."
+# --- Этап 2: Установка Docker под ключ (Динамический репозиторий) ---
+echo "🐳 Установка Docker для системы $OS_TYPE..."
 apt-get update && apt-get install -y ca-certificates curl gnupg lsb-release
+
 mkdir -p /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Качаем GPG-ключ строго под нужную ОС (ubuntu или debian)
+curl -fsSL "https://download.docker.com/linux/$OS_TYPE/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
+
+# Добавляем репозиторий строго под нужную ОС
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_TYPE $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-echo "✅ Docker установлен."
+echo "✅ Docker успешно установлен."
 
 # --- Этап 3: Сайт-заглушка и SSL-сертификаты ---
 echo "🔒 Настройка маскировки Nginx и генерация SSL..."
